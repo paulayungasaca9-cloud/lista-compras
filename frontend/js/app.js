@@ -1,5 +1,5 @@
 // ============ CONFIGURACIÓN ============
-const API_URL = 'http://localhost:3000/api/productos';
+const API_URL = 'https://lista-compras-api-16zc.onrender.com/api/productos';
 
 // ============ ELEMENTOS DEL DOM ============
 const btnCargar = document.getElementById('btnCargar');
