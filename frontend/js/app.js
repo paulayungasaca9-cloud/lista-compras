@@ -112,7 +112,7 @@ async function eliminarProducto(index) {
 // ============ FUNCIÓN: VERIFICAR SERVIDOR ============
 async function verificarServidor() {
     try {
-        const response = await fetch('https://lista-compras-api-16zc.onrender.com/api/health');
+        const response = await fetch('https://lista-compras-api-l6zc.onrender.com/api/health');
         if (response.ok) {
             document.getElementById('estadoServidor').textContent = '🟢';
         } else {
