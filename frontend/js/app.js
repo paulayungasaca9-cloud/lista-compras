@@ -112,7 +112,7 @@ async function eliminarProducto(index) {
 // ============ FUNCIÓN: VERIFICAR SERVIDOR ============
 async function verificarServidor() {
     try {
-        const response = await fetch('http://localhost:3000/api/health');
+        const response = await fetch('https://lista-compras-api-16zc.onrender.com/api/health');
         if (response.ok) {
             document.getElementById('estadoServidor').textContent = '🟢';
         } else {
@@ -143,4 +143,4 @@ verificarServidor();
 setInterval(verificarServidor, 30000);
 
 // Mostrar la plataforma
-document.getElementById('plataforma').textContent = 'Render.com (Próximo)';
+document.getElementById('plataforma').textContent = 'Render.com';
