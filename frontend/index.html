@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🛒 Lista de Compras - AA8</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🛒 Lista de Compras</h1>
+            <h2>AA8 - Aprendizaje Autónomo</h2>
+        </header>
+
+        <!-- Sección: Ver productos -->
+        <div class="card">
+            <h3>📋 Productos en tu lista</h3>
+            <button id="btnCargar" class="btn-primary">
+                🔄 Ver Productos
+            </button>
+            <div id="resultado" class="resultado">
+                <span class="mensaje-inicial">Presiona "Ver Productos" para cargar tu lista</span>
+            </div>
+        </div>
+
+        <!-- Sección: Agregar producto -->
+        <div class="card">
+            <h3>➕ Agregar Producto</h3>
+            <div class="input-group">
+                <input 
+                    type="text" 
+                    id="inputProducto" 
+                    placeholder="Ej: Leche, Pan, Huevos..."
+                    autofocus
+                >
+                <button id="btnAgregar" class="btn-success">
+                    ➕ Agregar
+                </button>
+            </div>
+            <div id="mensajeEnvio" class="resultado">
+                <span class="mensaje-inicial">Escribe un producto y presiona "Agregar"</span>
+            </div>
+        </div>
+
+        <!-- Estadísticas -->
+        <div class="stats">
+            <div class="stat-item">
+                <span class="stat-numero" id="totalProductos">0</span>
+                <span class="stat-label">Productos</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-numero" id="estadoServidor">🟢</span>
+                <span class="stat-label">Servidor</span>
+            </div>
+        </div>
+
+        <footer>
+            <p>🌐 Desplegado en: <span id="plataforma">Render.com</span></p>
+            <p>📅 Fecha: 2026-07-02</p>
+            <p>👨‍💻 Estudiante: [TU NOMBRE]</p>
+        </footer>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
