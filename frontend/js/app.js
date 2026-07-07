@@ -26,11 +26,12 @@ async function cargarProductos() {
             
             if (data.productos && data.productos.length > 0) {
                 data.productos.forEach((producto, index) => {
+                    const id = index + 1; // PostgreSQL usa IDs numéricos consecutivos
                     html += `
                         <div class="producto-item">
                             <span class="numero">${index + 1}.</span>
                             <span class="texto">${producto}</span>
-                            <button class="eliminar" onclick="eliminarProducto(${index})">✕</button>
+                            <button class="eliminar" onclick="eliminarProducto(${id})">✕</button>
                         </div>
                     `;
                 });
@@ -89,9 +90,9 @@ async function agregarProducto() {
 }
 
 // ============ FUNCIÓN: ELIMINAR PRODUCTO ============
-async function eliminarProducto(index) {
+async function eliminarProducto(id) {
     try {
-        const response = await fetch(`${API_URL}/${index}`, {
+        const response = await fetch(`${API_URL}/${id}`, {
             method: 'DELETE'
         });
         
@@ -143,4 +144,4 @@ verificarServidor();
 setInterval(verificarServidor, 30000);
 
 // Mostrar la plataforma
-document.getElementById('plataforma').textContent = 'Render.com';
+document.getElementById('plataforma').textContent = 'Render.com (PostgreSQL)';
