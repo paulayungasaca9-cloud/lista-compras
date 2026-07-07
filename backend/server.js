@@ -1,95 +1,139 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
+
+const {
+    crearTabla,
+    obtenerProductos,
+    agregarProducto,
+    eliminarProducto,
+    contarProductos
+} = require('./db');
+
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
 
-// ✅ CONFIGURACIÓN CORS - PERMITIR TODO
-app.use(cors({
-  origin: '*',
-  methods: ['GET', 'POST', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
+// Middleware
+app.use(cors());
 app.use(express.json());
 
-// 📦 BASE DE DATOS EN MEMORIA
-let productos = ['Leche', 'Pan', 'Huevos', 'Manzanas'];
+// ============ INICIALIZAR BASE DE DATOS ============
+crearTabla();
 
-// 📋 RUTAS DE LA API
-app.get('/api/products', (req, res) => {
-  res.json({
-    mensaje: 'Productos obtenidos exitosamente',
-    productos: productos,
-    total: productos.length,
-    timestamp: new Date().toISOString()
-  });
+// ============ RUTAS ============
+
+// GET - Obtener todos los productos
+app.get('/api/products', async (req, res) => {
+    try {
+        const productos = await obtenerProductos();
+        res.json({
+            mensaje: 'Productos obtenidos exitosamente',
+            productos: productos.map(p => p.nombre),
+            total: productos.length,
+            timestamp: new Date().toISOString()
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al obtener productos' });
+    }
 });
 
-app.post('/api/products', (req, res) => {
-  const { producto } = req.body;
-  if (!producto) {
-    return res.status(400).json({ 
-      error: 'El campo producto es obligatorio',
-      ejemplo: { producto: 'Leche' }
-    });
-  }
-  productos.push(producto);
-  res.status(201).json({
-    mensaje: `✅ Producto "${producto}" agregado exitosamente`,
-    productos: productos,
-    total: productos.length
-  });
+// POST - Agregar un producto
+app.post('/api/products', async (req, res) => {
+    try {
+        const { producto } = req.body;
+        if (!producto) {
+            return res.status(400).json({
+                error: 'El campo producto es obligatorio',
+                ejemplo: { producto: 'Leche' }
+            });
+        }
+
+        await agregarProducto(producto);
+        const productos = await obtenerProductos();
+
+        res.status(201).json({
+            mensaje: `✅ Producto "${producto}" agregado exitosamente`,
+            productos: productos.map(p => p.nombre),
+            total: productos.length
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al agregar producto' });
+    }
 });
 
-app.delete('/api/products/:index', (req, res) => {
-  const index = parseInt(req.params.index);
-  if (index < 0 || index >= productos.length) {
-    return res.status(400).json({ 
-      error: 'Índice inválido',
-      mensaje: `El índice ${index} no existe. Total: ${productos.length} productos`
-    });
-  }
-  const eliminado = productos[index];
-  productos.splice(index, 1);
-  res.json({
-    mensaje: `✅ Producto "${eliminado}" eliminado`,
-    productos: productos,
-    total: productos.length
-  });
+// DELETE - Eliminar un producto por ID
+app.delete('/api/products/:id', async (req, res) => {
+    try {
+        const id = parseInt(req.params.id);
+        const eliminado = await eliminarProducto(id);
+
+        if (!eliminado) {
+            return res.status(404).json({ error: 'Producto no encontrado' });
+        }
+
+        const productos = await obtenerProductos();
+        res.json({
+            mensaje: `✅ Producto "${eliminado.nombre}" eliminado`,
+            productos: productos.map(p => p.nombre),
+            total: productos.length
+        });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error al eliminar producto' });
+    }
 });
 
-app.get('/api/health', (req, res) => {
-  res.json({
-    status: 'OK',
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
-    total_productos: productos.length
-  });
+// GET - Health check
+app.get('/api/health', async (req, res) => {
+    try {
+        const total = await contarProductos();
+        res.json({
+            status: 'OK',
+            timestamp: new Date().toISOString(),
+            uptime: process.uptime(),
+            total_productos: total,
+            database: 'PostgreSQL'
+        });
+    } catch (error) {
+        res.json({
+            status: 'OK',
+            timestamp: new Date().toISOString(),
+            database: 'PostgreSQL'
+        });
+    }
 });
 
-app.get('/', (req, res) => {
-  res.json({
-    nombre: '🛒 API Lista de Compras',
-    version: '1.0.0',
-    endpoints: {
-      'GET /api/products': 'Obtener todos los productos',
-      'POST /api/products': 'Agregar un producto',
-      'DELETE /api/products/:index': 'Eliminar un producto',
-      'GET /api/health': 'Verificar estado del servidor'
-    },
-    total_productos: productos.length,
-    productos: productos
-  });
+// Ruta raíz
+app.get('/', async (req, res) => {
+    try {
+        const total = await contarProductos();
+        res.json({
+            nombre: '🛒 API Lista de Compras (PostgreSQL)',
+            version: '2.0.0',
+            endpoints: {
+                'GET /api/products': 'Obtener todos los productos',
+                'POST /api/products': 'Agregar un producto',
+                'DELETE /api/products/:id': 'Eliminar un producto por ID',
+                'GET /api/health': 'Verificar estado del servidor'
+            },
+            total_productos: total
+        });
+    } catch {
+        res.json({
+            nombre: '🛒 API Lista de Compras (PostgreSQL)',
+            version: '2.0.0'
+        });
+    }
 });
 
 app.listen(PORT, () => {
-  console.log('================================================');
-  console.log('🛒 API LISTA DE COMPRAS - DEPLOY EN RENDER');
-  console.log('================================================');
-  console.log(`📡 Puerto: ${PORT}`);
-  console.log(`📋 Productos: ${productos.join(', ')}`);
-  console.log(`📊 Total: ${productos.length} productos`);
-  console.log('✅ CORS habilitado para todos los orígenes');
-  console.log('================================================');
-  console.log('✅ Servidor listo para recibir peticiones');
+    console.log('================================================');
+    console.log('🛒 API LISTA DE COMPRAS (POSTGRESQL)');
+    console.log('================================================');
+    console.log(`📡 Puerto: ${PORT}`);
+    console.log('📊 Base de datos: PostgreSQL');
+    console.log('================================================');
+    console.log('✅ Servidor listo para recibir peticiones');
 });
