@@ -29,6 +29,7 @@ app.get('/api/products', async (req, res) => {
         res.json({
             mensaje: 'Productos obtenidos exitosamente',
             productos: productos.map(p => p.nombre),
+            ids: productos.map(p => p.id),
             total: productos.length,
             timestamp: new Date().toISOString()
         });
@@ -55,6 +56,7 @@ app.post('/api/products', async (req, res) => {
         res.status(201).json({
             mensaje: `✅ Producto "${producto}" agregado exitosamente`,
             productos: productos.map(p => p.nombre),
+            ids: productos.map(p => p.id),
             total: productos.length
         });
     } catch (error) {
@@ -67,6 +69,11 @@ app.post('/api/products', async (req, res) => {
 app.delete('/api/products/:id', async (req, res) => {
     try {
         const id = parseInt(req.params.id);
+        
+        if (isNaN(id)) {
+            return res.status(400).json({ error: 'ID inválido' });
+        }
+
         const eliminado = await eliminarProducto(id);
 
         if (!eliminado) {
@@ -77,6 +84,7 @@ app.delete('/api/products/:id', async (req, res) => {
         res.json({
             mensaje: `✅ Producto "${eliminado.nombre}" eliminado`,
             productos: productos.map(p => p.nombre),
+            ids: productos.map(p => p.id),
             total: productos.length
         });
     } catch (error) {
@@ -112,6 +120,8 @@ app.get('/', async (req, res) => {
         res.json({
             nombre: '🛒 API Lista de Compras (PostgreSQL)',
             version: '2.0.0',
+            autor: 'Paula Yungasaca',
+            fecha: '2026-07-08',
             endpoints: {
                 'GET /api/products': 'Obtener todos los productos',
                 'POST /api/products': 'Agregar un producto',
@@ -128,11 +138,21 @@ app.get('/', async (req, res) => {
     }
 });
 
+// Manejo de rutas no encontradas (404)
+app.use((req, res) => {
+    res.status(404).json({
+        error: 'Ruta no encontrada',
+        mensaje: `La ruta ${req.originalUrl} no existe en esta API`
+    });
+});
+
+// Iniciar servidor
 app.listen(PORT, () => {
     console.log('================================================');
     console.log('🛒 API LISTA DE COMPRAS (POSTGRESQL)');
     console.log('================================================');
     console.log(`📡 Puerto: ${PORT}`);
+    console.log(`🌐 URL: http://localhost:${PORT}`);
     console.log('📊 Base de datos: PostgreSQL');
     console.log('================================================');
     console.log('✅ Servidor listo para recibir peticiones');
