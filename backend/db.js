@@ -9,7 +9,7 @@ const pool = new Pool({
     }
 });
 
-// Función para crear la tabla e insertar datos solo si está vacía
+// Función para crear la tabla SOLO SI NO EXISTE
 async function crearTabla() {
     try {
         // Crear la tabla si no existe
@@ -22,11 +22,11 @@ async function crearTabla() {
         `);
         console.log('✅ Tabla "productos" creada/verificada');
 
-        // Verificar si la tabla tiene datos
+        // Verificar cuántos productos hay
         const result = await pool.query('SELECT COUNT(*) FROM productos');
         const count = parseInt(result.rows[0].count);
 
-        // Si está vacía, insertar los productos iniciales
+        // SOLO INSERTAR SI LA TABLA ESTÁ VACÍA (count === 0)
         if (count === 0) {
             await pool.query(`
                 INSERT INTO productos (nombre) VALUES 
@@ -37,7 +37,7 @@ async function crearTabla() {
             `);
             console.log('✅ Productos iniciales insertados (tabla vacía)');
         } else {
-            console.log(`ℹ️ La tabla ya tiene ${count} productos, no se insertaron duplicados`);
+            console.log(`ℹ️ La tabla ya tiene ${count} productos, NO se insertaron duplicados`);
         }
     } catch (error) {
         console.error('❌ Error en la base de datos:', error);

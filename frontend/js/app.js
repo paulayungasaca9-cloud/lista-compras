@@ -26,7 +26,8 @@ async function cargarProductos() {
             
             if (data.productos && data.productos.length > 0) {
                 data.productos.forEach((producto, index) => {
-                    const id = index + 1; // PostgreSQL usa IDs numéricos consecutivos
+                    // ✅ USAR EL ID REAL DE LA BASE DE DATOS
+                    const id = data.ids ? data.ids[index] : (index + 1);
                     html += `
                         <div class="producto-item">
                             <span class="numero">${index + 1}.</span>
@@ -92,6 +93,8 @@ async function agregarProducto() {
 // ============ FUNCIÓN: ELIMINAR PRODUCTO ============
 async function eliminarProducto(id) {
     try {
+        console.log(`🗑️ Eliminando producto con ID: ${id}`);
+        
         const response = await fetch(`${API_URL}/${id}`, {
             method: 'DELETE'
         });
@@ -102,7 +105,7 @@ async function eliminarProducto(id) {
             mensajeEnvio.innerHTML = `✅ ${data.mensaje}`;
             cargarProductos();
         } else {
-            mensajeEnvio.innerHTML = '❌ Error al eliminar el producto';
+            mensajeEnvio.innerHTML = `❌ Error: ${data.error || 'No se pudo eliminar'}`;
         }
     } catch (error) {
         mensajeEnvio.innerHTML = '❌ Error de conexión con el servidor';
