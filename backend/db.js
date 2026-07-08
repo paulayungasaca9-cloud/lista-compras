@@ -5,24 +5,42 @@ require('dotenv').config();
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
     ssl: {
-        rejectUnauthorized: false // Necesario para Render
+        rejectUnauthorized: false
     }
 });
 
-// Función para crear la tabla si no existe
+// Función para crear la tabla SOLO SI NO EXISTE
 async function crearTabla() {
-    const query = `
-        CREATE TABLE IF NOT EXISTS productos (
-            id SERIAL PRIMARY KEY,
-            nombre VARCHAR(255) NOT NULL,
-            fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-    `;
     try {
-        await pool.query(query);
+        // Crear la tabla si no existe
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS productos (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(255) NOT NULL,
+                fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            );
+        `);
         console.log('✅ Tabla "productos" creada/verificada');
+
+        // Verificar cuántos productos hay
+        const result = await pool.query('SELECT COUNT(*) FROM productos');
+        const count = parseInt(result.rows[0].count);
+
+        // SOLO INSERTAR SI LA TABLA ESTÁ VACÍA (count === 0)
+        if (count === 0) {
+            await pool.query(`
+                INSERT INTO productos (nombre) VALUES 
+                    ('Leche'), 
+                    ('Pan'), 
+                    ('Huevos'), 
+                    ('Manzanas')
+            `);
+            console.log('✅ Productos iniciales insertados (tabla vacía)');
+        } else {
+            console.log(`ℹ️ La tabla ya tiene ${count} productos, NO se insertaron duplicados`);
+        }
     } catch (error) {
-        console.error('❌ Error creando tabla:', error);
+        console.error('❌ Error en la base de datos:', error);
     }
 }
 
